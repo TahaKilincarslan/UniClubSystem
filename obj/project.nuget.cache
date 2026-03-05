@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "00eLwXlRgDU=",
+  "dgSpecHash": "x/d3mt/xE/0=",
   "success": true,
-  "projectFilePath": "C:\\Users\\F15\\Desktop\\Yeni klasör\\UniversiteKulupSistemi\\Yeni klasör\\university_clubs\\UniversityClubSystem.csproj",
+  "projectFilePath": "C:\\Users\\F15\\Desktop\\UniClubSystem\\UniversityClubSystem.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\F15\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\F15\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.2\\microsoft.aspnetcore.openapi.9.0.2.nupkg.sha512",

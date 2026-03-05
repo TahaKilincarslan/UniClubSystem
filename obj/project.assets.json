@@ -3279,11 +3279,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\F15\\Desktop\\Yeni klasör\\UniversiteKulupSistemi\\Yeni klasör\\university_clubs\\UniversityClubSystem.csproj",
+      "projectUniqueName": "C:\\Users\\F15\\Desktop\\UniClubSystem\\UniversityClubSystem.csproj",
       "projectName": "UniversityClubSystem",
-      "projectPath": "C:\\Users\\F15\\Desktop\\Yeni klasör\\UniversiteKulupSistemi\\Yeni klasör\\university_clubs\\UniversityClubSystem.csproj",
+      "projectPath": "C:\\Users\\F15\\Desktop\\UniClubSystem\\UniversityClubSystem.csproj",
       "packagesPath": "C:\\Users\\F15\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\F15\\Desktop\\Yeni klasör\\UniversiteKulupSistemi\\Yeni klasör\\university_clubs\\obj\\",
+      "outputPath": "C:\\Users\\F15\\Desktop\\UniClubSystem\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
