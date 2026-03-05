@@ -1,0 +1,43 @@
+.uni-img {
+    height: 200px;
+    object-fit: contain;
+    background-color: #f8f9fa;
+    padding: 20px;
+}
+
+#searchInput {
+    transition: all 0.3s ease;
+}
+
+#searchInput:focus {
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+}
+
+.card {
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.card .btn {
+    transition: all 0.3s ease;
+}
+
+.card:hover .btn {
+    background-color: #000;
+    color: #fff;
+}
+.card {
+    border-radius: 16px;
+}
+.uni-img {
+    border-radius: 12px;
+}
+.navbar {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
