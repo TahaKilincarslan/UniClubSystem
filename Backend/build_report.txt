@@ -1,0 +1,9 @@
+﻿  Geri y├╝klenecek projeler belirleniyor...
+  Geri y├╝kleme i├ğin t├╝m projeler g├╝ncel.
+  UniversityClubSystem -> C:\Users\F15\Desktop\UniClubSystem\Backend\bin\Debug\net9.0\UniversityClubSystem.dll
+
+Olu┼şturma ba┼şar─▒l─▒ oldu.
+    0 Uyar─▒
+    0 Hata
+
+Ge├ğen S├╝re 00:00:02.93
