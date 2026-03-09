@@ -1,1 +1,20 @@
-{"Version":1,"Hash":"AfJMMvpwYMJZV5XlO6XsNna/yXZNqHKlNSErdyJsxU4=","Source":"UniversityClubSystem","BasePath":"/","Mode":"Root","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[{"Name":"UniversityClubSystem\\wwwroot","Source":"UniversityClubSystem","ContentRoot":"C:\\Users\\F15\\Desktop\\UniClubSystem\\Backend\\wwwroot\\","BasePath":"/","Pattern":"**"}],"Assets":[],"Endpoints":[]}
+{
+  "Version": 1,
+  "Hash": "AfJMMvpwYMJZV5XlO6XsNna/yXZNqHKlNSErdyJsxU4=",
+  "Source": "UniversityClubSystem",
+  "BasePath": "/",
+  "Mode": "Root",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "UniversityClubSystem\\wwwroot",
+      "Source": "UniversityClubSystem",
+      "ContentRoot": "C:\\Users\\F15\\Desktop\\UniClubSystem\\Backend\\wwwroot\\",
+      "BasePath": "/",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [],
+  "Endpoints": []
+}

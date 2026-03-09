@@ -1,5 +1,46 @@
 document.addEventListener("DOMContentLoaded", async function () {
 
+    /* =========================
+       NAVBAR USER CONTROL
+    ========================== */
+
+    function updateNavbar(){
+
+        const user = JSON.parse(localStorage.getItem("user"))
+
+        if(user){
+
+            const navButtons = document.getElementById("navButtons")
+
+            if(navButtons){
+                navButtons.innerHTML = `
+                <a href="profile.html" class="btn btn-outline-dark me-2">
+                Profile
+                </a>
+
+                <button class="btn btn-dark" onclick="logout()">
+                Logout
+                </button>
+                `
+            }
+
+        }
+
+    }
+
+    window.logout = function(){
+
+        localStorage.removeItem("user")
+        location.reload()
+
+    }
+
+    updateNavbar()
+
+    /* =========================
+       DOM ELEMENTS
+    ========================== */
+
     const universityList = document.getElementById("universityList");
     const totalUniversities = document.getElementById("totalUniversities");
     const totalClubs = document.getElementById("totalClubs");
@@ -8,8 +49,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     const cityFilter = document.getElementById("cityFilter");
     const noResultMessage = document.getElementById("noResultMessage");
 
-    // Fetch data from API
+    /* =========================
+       FETCH UNIVERSITIES
+    ========================== */
+
     const universities = await ApiService.getUniversities();
+    console.log(universities);
 
     /* =========================
        GENERATE UNIVERSITY CARDS
@@ -17,27 +62,38 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function renderUniversities(data) {
         universityList.innerHTML = "";
+
         data.forEach(function (uni) {
+
             const col = document.createElement("div");
             col.className = "col-md-4 university-card";
             col.setAttribute("data-city", uni.city);
 
             col.innerHTML = `
                 <div class="card shadow-sm p-3 h-100">
-                    <img src="${uni.logoUrl || 'images/universities/default.png'}" class="card-img-top uni-img" onerror="this.src='images/universities/default.png'">
+                    <img src="${uni.logoUrl || 'images/universities/default.png'}"
+                     class="card-img-top uni-img"
+                     onerror="this.src='images/universities/default.png'">
+
                     <div class="card-body d-flex flex-column">
+
                         <h5 class="card-title">${uni.name}</h5>
+
                         <p class="text-muted">
                             ${uni.clubCount || 0} Clubs • ${uni.city}
                         </p>
-                        <a href="university.html?id=${uni.id}&name=${encodeURIComponent(uni.name)}" 
+
+                        <a href="university.html?id=${uni.id}&name=${encodeURIComponent(uni.name)}"
                            class="btn btn-outline-dark mt-auto w-100">
                            View Clubs
                         </a>
+
                     </div>
                 </div>
             `;
+
             universityList.appendChild(col);
+
         });
 
         if (data.length === 0) {
@@ -53,16 +109,22 @@ document.addEventListener("DOMContentLoaded", async function () {
        SEARCH + CITY FILTER
     ========================== */
 
-    async function filterUniversities() {
+    function filterUniversities() {
+
         const searchValue = searchInput.value.toLowerCase();
         const selectedCity = cityFilter.value;
 
-        // Filter locally for performance, or call API again if preferred
-        // Let's filter locally since we have all data
         const filtered = universities.filter(uni => {
-            const matchesSearch = uni.name.toLowerCase().includes(searchValue);
-            const matchesCity = selectedCity === "all" || uni.city.toLowerCase() === selectedCity.toLowerCase();
+
+            const matchesSearch =
+            uni.name.toLowerCase().includes(searchValue);
+
+            const matchesCity =
+            selectedCity === "all" ||
+            uni.city.toLowerCase() === selectedCity.toLowerCase();
+
             return matchesSearch && matchesCity;
+
         });
 
         renderUniversities(filtered);
@@ -76,6 +138,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     ========================== */
 
     let clubCount = 0;
+
     universities.forEach(uni => {
         clubCount += uni.clubCount || 0;
     });
@@ -85,23 +148,28 @@ document.addEventListener("DOMContentLoaded", async function () {
     ========================== */
 
     function animateCounter(element, target, duration = 1500) {
+
         if (!element) return;
+
         let start = 0;
         const increment = target / (duration / 16);
 
         const timer = setInterval(() => {
+
             start += increment;
+
             if (start >= target) {
                 element.textContent = target;
                 clearInterval(timer);
             } else {
                 element.textContent = Math.floor(start);
             }
+
         }, 16);
     }
 
     animateCounter(totalUniversities, universities.length);
     animateCounter(totalClubs, clubCount);
-    animateCounter(totalMembers, 0); // No student count in base API yet
+    animateCounter(totalMembers, 0);
 
 });
