@@ -1,13 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniversityClubSystem.Data;
-using UniversityClubSystem.DTOs;
 using UniversityClubSystem.Models;
+using Microsoft.AspNetCore.Authorization;
+using UniversityClubSystem.DTOs;
 
 namespace UniversityClubSystem.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class MembershipsController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -67,6 +69,7 @@ namespace UniversityClubSystem.Controllers
         /// PUT /api/memberships/respond
         /// </summary>
         [HttpPut("respond")]
+        [Authorize(Roles = $"{nameof(UserRole.ClubManager)},{nameof(UserRole.SystemAdmin)}")]
         public async Task<IActionResult> Respond([FromBody] MembershipResponseDto dto)
         {
             // Sadece Approved veya Rejected kabul edilir
@@ -104,6 +107,7 @@ namespace UniversityClubSystem.Controllers
         /// GET /api/memberships/club/{clubId}
         /// </summary>
         [HttpGet("club/{clubId:int}")]
+        [Authorize(Roles = $"{nameof(UserRole.ClubManager)},{nameof(UserRole.SystemAdmin)}")]
         public async Task<IActionResult> GetMembershipsByClub(int clubId)
         {
             var memberships = await _context.ClubMemberships

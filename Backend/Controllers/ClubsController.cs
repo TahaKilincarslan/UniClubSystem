@@ -1,20 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniversityClubSystem.Data;
-using UniversityClubSystem.DTOs;
 using UniversityClubSystem.Models;
+using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
+using UniversityClubSystem.DTOs;
 
 namespace UniversityClubSystem.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ClubsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
 
-        public ClubsController(AppDbContext context)
+        public ClubsController(AppDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -22,6 +27,7 @@ namespace UniversityClubSystem.Controllers
         /// GET /api/clubs/{universityId}
         /// </summary>
         [HttpGet("{universityId:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetClubsByUniversity(int universityId)
         {
             // Üniversitenin var olup olmadığını kontrol et
@@ -54,6 +60,7 @@ namespace UniversityClubSystem.Controllers
         /// GET /api/clubs/detail/{id}
         /// </summary>
         [HttpGet("detail/{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetClubDetail(int id)
         {
             var club = await _context.Clubs
@@ -66,34 +73,8 @@ namespace UniversityClubSystem.Controllers
             if (club == null)
                 return NotFound(new { message = "Kulüp bulunamadı." });
 
-            // Yanıtı DTO'ya dönüştür
-            var dto = new ClubDetailDto
-            {
-                Id = club.Id,
-                Name = club.Name,
-                Description = club.Description,
-                Category = club.Category,
-                ImageUrl = club.ImageUrl,
-                UniversityName = club.University.Name,
-                ManagerFullName = $"{club.Manager.FirstName} {club.Manager.LastName}",
-                CreatedDate = club.CreatedDate,
-                // Sadece onaylanmış üyeleri say
-                MemberCount = club.Memberships.Count(m => m.Status == MembershipStatus.Approved),
-                // Bugünden sonraki aktif etkinlikleri getir
-                UpcomingEvents = club.Events
-                    .Where(e => e.IsActive && e.Date >= DateTime.UtcNow)
-                    .OrderBy(e => e.Date)
-                    .Select(e => new EventDto
-                    {
-                        Id = e.Id,
-                        Title = e.Title,
-                        Description = e.Description,
-                        Date = e.Date,
-                        Location = e.Location,
-                        IsActive = e.IsActive
-                    })
-                    .ToList()
-            };
+            // AutoMapper kullanarak DTO'ya dönüştür
+            var dto = _mapper.Map<ClubDetailDto>(club);
 
             return Ok(dto);
         }
@@ -103,6 +84,7 @@ namespace UniversityClubSystem.Controllers
         /// POST /api/clubs
         /// </summary>
         [HttpPost]
+        [Authorize(Roles = nameof(UserRole.SystemAdmin))] // Sadece Admin kulüp oluşturabilir
         public async Task<IActionResult> CreateClub([FromBody] Club club)
         {
             club.CreatedDate = DateTime.UtcNow;

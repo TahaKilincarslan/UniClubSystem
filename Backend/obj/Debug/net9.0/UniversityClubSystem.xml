@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UniversityClubSystem</name>
+    </assembly>
+    <members>
+        <member name="M:UniversityClubSystem.Controllers.AuthController.Register(UniversityClubSystem.DTOs.RegisterDto)">
+            <summary>
+            Yeni bir kullanıcı kaydı oluşturur.
+            </summary>
+            <param name="registerDto">Kayıt bilgileri</param>
+            <returns>Auth token ve kullanıcı bilgileri</returns>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.AuthController.Login(UniversityClubSystem.DTOs.LoginDto)">
+            <summary>
+            Kullanıcı girişi yaparak JWT token döndürür.
+            </summary>
+            <param name="loginDto">Giriş bilgileri (Email, Password)</param>
+            <returns>Auth token ve kullanıcı bilgileri</returns>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.ClubsController.GetClubsByUniversity(System.Int32)">
+            <summary>
+            Bir üniversiteye ait tüm kulüpleri listeler.
+            GET /api/clubs/{universityId}
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.ClubsController.GetClubDetail(System.Int32)">
+            <summary>
+            Kulüp detaylarını, üye sayısını ve yaklaşan etkinlikleri döndürür.
+            GET /api/clubs/detail/{id}
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.ClubsController.CreateClub(UniversityClubSystem.Models.Club)">
+            <summary>
+            Yeni bir kulüp oluşturur.
+            POST /api/clubs
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.EventsController.GetEvents(System.Nullable{System.Int32})">
+            <summary>
+            Tüm aktif etkinlikleri listeler. Opsiyonel olarak kulübe göre filtreleme yapar.
+            GET /api/events?clubId=1
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.EventsController.CreateEvent(UniversityClubSystem.Models.Event)">
+            <summary>
+            Yeni bir etkinlik oluşturur.
+            POST /api/events
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.EventsController.ToggleEventStatus(System.Int32)">
+            <summary>
+            Etkinliğin aktiflik durumunu günceller.
+            PUT /api/events/{id}/toggle
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.MediaController.Upload(System.String,Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+            Belirtilen klasöre (clubs, events, universities) resim yüklemesi yapar.
+            </summary>
+            <param name="folder">Hedef klasör adı</param>
+            <param name="file">Yüklenecek dosya</param>
+            <returns>Dosyanın erişim URL'si</returns>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.MembershipsController.Apply(UniversityClubSystem.DTOs.MembershipApplyDto)">
+            <summary>
+            Öğrencinin bir kulübe katılma başvurusu yapması.
+            Başvuru varsayılan olarak "Pending" durumuyla oluşturulur.
+            POST /api/memberships/apply
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.MembershipsController.Respond(UniversityClubSystem.DTOs.MembershipResponseDto)">
+            <summary>
+            Kulüp Yöneticisinin başvuru talebini onaylaması (Approved) veya reddetmesi (Rejected).
+            PUT /api/memberships/respond
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.MembershipsController.GetMembershipsByClub(System.Int32)">
+            <summary>
+            Bir kulübe yapılmış tüm başvuruları listeler (Yönetici paneli için).
+            GET /api/memberships/club/{clubId}
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:UniversityClubSystem.Controllers.UniversitiesController.GetUniversities(System.String)" -->
+        <!-- Badly formed XML comment ignored for member "M:UniversityClubSystem.Controllers.UniversitiesController.CreateUniversity(UniversityClubSystem.Models.University)" -->
+    </members>
+</doc>

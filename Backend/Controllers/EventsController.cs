@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniversityClubSystem.Data;
 using UniversityClubSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UniversityClubSystem.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class EventsController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -21,6 +23,7 @@ namespace UniversityClubSystem.Controllers
         /// GET /api/events?clubId=1
         /// </summary>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetEvents([FromQuery] int? clubId)
         {
             var query = _context.Events
@@ -55,6 +58,7 @@ namespace UniversityClubSystem.Controllers
         /// POST /api/events
         /// </summary>
         [HttpPost]
+        [Authorize(Roles = $"{nameof(UserRole.ClubManager)},{nameof(UserRole.SystemAdmin)}")]
         public async Task<IActionResult> CreateEvent([FromBody] Event @event)
         {
             // Kulübün var olup olmadığını kontrol et
@@ -73,6 +77,7 @@ namespace UniversityClubSystem.Controllers
         /// PUT /api/events/{id}/toggle
         /// </summary>
         [HttpPut("{id:int}/toggle")]
+        [Authorize(Roles = $"{nameof(UserRole.ClubManager)},{nameof(UserRole.SystemAdmin)}")]
         public async Task<IActionResult> ToggleEventStatus(int id)
         {
             var @event = await _context.Events.FindAsync(id);
