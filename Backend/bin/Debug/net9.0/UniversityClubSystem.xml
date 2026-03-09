@@ -81,7 +81,17 @@
             GET /api/memberships/club/{clubId}
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:UniversityClubSystem.Controllers.UniversitiesController.GetUniversities(System.String)" -->
-        <!-- Badly formed XML comment ignored for member "M:UniversityClubSystem.Controllers.UniversitiesController.CreateUniversity(UniversityClubSystem.Models.University)" -->
+        <member name="M:UniversityClubSystem.Controllers.UniversitiesController.GetUniversities(System.String)">
+            <summary>
+            Tüm üniversiteleri listeler. Opsiyonel olarak şehre göre filtreleme yapar.
+            GET /api/universities?city=İstanbul
+            </summary>
+        </member>
+        <member name="M:UniversityClubSystem.Controllers.UniversitiesController.CreateUniversity(UniversityClubSystem.Models.University)">
+            <summary>
+            Yeni bir üniversite ekler.
+            POST /api/universities
+            </summary>
+        </member>
     </members>
 </doc>

@@ -2,7 +2,7 @@
   "version": 2,
   "dgSpecHash": "tky2WMNWVDY=",
   "success": true,
-  "projectFilePath": "/Users/elifayselyildirim/Desktop/UniClubSystem/Backend/UniversityClubSystem.csproj",
+  "projectFilePath": "C:\\Users\\F15\\Desktop\\UniClubSystem\\Backend\\UniversityClubSystem.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\F15\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\F15\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

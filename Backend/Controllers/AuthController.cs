@@ -28,29 +28,46 @@ namespace UniversityClubSystem.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto registerDto)
         {
+            Console.WriteLine($"Registration attempt for: {registerDto.Email}");
+            
             if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email.ToLower()))
+            {
+                Console.WriteLine("Register failed: Email already exists.");
                 return BadRequest("Email already exists.");
+            }
 
-            var user = new User
+            try 
             {
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                Email = registerDto.Email.ToLower(),
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
-                Role = UserRole.Student // Default role
-            };
+                var user = new User
+                {
+                    FirstName = registerDto.FirstName,
+                    LastName = registerDto.LastName,
+                    Email = registerDto.Email.ToLower(),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
+                    Role = UserRole.Student // Default role
+                };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+                Console.WriteLine($"User saved to database: {user.Email}, ID: {user.Id}");
 
-            return new AuthResponseDto
+                var response = new AuthResponseDto
+                {
+                    Token = _tokenService.CreateToken(user),
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Role = user.Role.ToString()
+                };
+                Console.WriteLine("Token created successfully.");
+                return response;
+            }
+            catch (Exception ex)
             {
-                Token = _tokenService.CreateToken(user),
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Role = user.Role.ToString()
-            };
+                Console.WriteLine($"FATAL ERROR during registration: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                throw; // Rethrow to let ExceptionMiddleware handle it
+            }
         }
 
         /// <summary>

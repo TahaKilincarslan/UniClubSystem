@@ -1,38 +1,49 @@
 document
-.getElementById("registerForm")
-.addEventListener("submit", async function(e){
+    .addEventListener("submit", async function (e) {
+        e.preventDefault()
+        console.log("Registration started...");
 
-e.preventDefault()
+        try {
+            const user = {
+                firstName: document.getElementById("firstName").value,
+                lastName: document.getElementById("lastName").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            }
+            console.log("Sending user data:", user);
 
-const user = {
+            const response = await fetch("http://localhost:5149/api/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(user)
+            })
 
-firstName: document.getElementById("firstName").value,
-lastName: document.getElementById("lastName").value,
-email: document.getElementById("email").value,
-passwordHash: document.getElementById("password").value
+            console.log("Response received:", response.status, response.statusText);
 
-}
+            if (response.ok) {
+                const userData = await response.json()
+                console.log("Registration successful, user data:", userData);
 
-const response = await fetch("http://localhost:5149/api/auth/register",{
+                localStorage.setItem("user", JSON.stringify(userData))
+                alert("Registration successful! You are being logged in.")
+                window.location.href = "index.html"
+            } else {
+                let errorMessage = "Register failed";
+                const responseText = await response.text();
+                console.error("Registration failed. Status:", response.status, "Body:", responseText);
 
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body: JSON.stringify(user)
-
-})
-
-if(response.ok){
-
-alert("Registration successful")
-
-window.location.href="login.html"
-
-}else{
-
-alert("Register failed")
-
-}
-
-})
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.message || errorData.title || JSON.stringify(errorData);
+                } catch (e) {
+                    errorMessage = responseText || "Register failed";
+                }
+                alert("Error: " + errorMessage)
+            }
+        } catch (error) {
+            console.error("CRITICAL ERROR during registration:", error);
+            alert("Critical Error: " + error.message);
+        }
+    })
