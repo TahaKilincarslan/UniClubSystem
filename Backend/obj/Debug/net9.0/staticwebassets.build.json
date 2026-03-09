@@ -1,1 +1,12 @@
-{"Version":1,"Hash":"/fQEu9xTdMuZ0PmbC8YCCXWveumWynJxqOu3ohvGoYE=","Source":"UniversityClubSystem","BasePath":"/","Mode":"Root","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}
+{
+  "Version": 1,
+  "Hash": "ZDHn7ZVlVnat9QMWM7d1W+dEqq/oQfi3wKe5g4wEjXs=",
+  "Source": "UniversityClubSystem",
+  "BasePath": "_content/UniversityClubSystem",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

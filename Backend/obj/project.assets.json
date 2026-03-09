@@ -3273,33 +3273,25 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\F15\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/Users/elifayselyildirim/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\F15\\Desktop\\UniClubSystem\\Backend\\UniversityClubSystem.csproj",
+      "projectUniqueName": "/Users/elifayselyildirim/Desktop/UniClubSystem/Backend/UniversityClubSystem.csproj",
       "projectName": "UniversityClubSystem",
-      "projectPath": "C:\\Users\\F15\\Desktop\\UniClubSystem\\Backend\\UniversityClubSystem.csproj",
-      "packagesPath": "C:\\Users\\F15\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\F15\\Desktop\\UniClubSystem\\Backend\\obj\\",
+      "projectPath": "/Users/elifayselyildirim/Desktop/UniClubSystem/Backend/UniversityClubSystem.csproj",
+      "packagesPath": "/Users/elifayselyildirim/.nuget/packages/",
+      "outputPath": "/Users/elifayselyildirim/Desktop/UniClubSystem/Backend/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\F15\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/elifayselyildirim/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "https://api.nuget.org/v3/index.json": {},
-        "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
@@ -3317,7 +3309,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -3367,7 +3359,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.200/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
