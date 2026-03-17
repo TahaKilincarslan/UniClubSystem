@@ -2,27 +2,32 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniversityClubSystem.Data;
 using UniversityClubSystem.Models;
+using UniversityClubSystem.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace UniversityClubSystem.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
     [Authorize]
     public class EventsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly EventService _eventService;
+        private readonly EventRequestService _eventRequestService;
 
-        public EventsController(AppDbContext context)
+        public EventsController(AppDbContext context, EventService eventService, EventRequestService eventRequestService)
         {
             _context = context;
+            _eventService = eventService;
+            _eventRequestService = eventRequestService;
         }
 
         /// <summary>
         /// Tüm aktif etkinlikleri listeler. Opsiyonel olarak kulübe göre filtreleme yapar.
         /// GET /api/events?clubId=1
         /// </summary>
-        [HttpGet]
+        [HttpGet("api/events")]
         [AllowAnonymous]
         public async Task<IActionResult> GetEvents([FromQuery] int? clubId)
         {
@@ -54,14 +59,40 @@ namespace UniversityClubSystem.Controllers
         }
 
         /// <summary>
-        /// Yeni bir etkinlik oluşturur.
-        /// POST /api/events
+        /// Bir kulübe ait aktif etkinlikleri listeler.
+        /// GET /api/clubs/{clubId}/events
         /// </summary>
-        [HttpPost]
+        [HttpGet("api/clubs/{clubId:int}/events")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetEventsByClub(int clubId)
+        {
+            var events = await _eventService.GetEventsByClubIdAsync(clubId);
+            return Ok(events);
+        }
+
+        /// <summary>
+        /// Belirli bir etkinliğin detaylarını getirir.
+        /// GET /api/events/{id}
+        /// </summary>
+        [HttpGet("api/events/{id:int}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetEventById(int id)
+        {
+            var ev = await _eventService.GetEventByIdAsync(id);
+            if (ev == null)
+                return NotFound(new { message = "Etkinlik bulunamadı." });
+
+            return Ok(ev);
+        }
+
+        /// <summary>
+        /// Yeni bir etkinlik oluşturur.
+        /// POST /api/events/create
+        /// </summary>
+        [HttpPost("api/events/create")]
         [Authorize(Roles = $"{nameof(UserRole.ClubManager)},{nameof(UserRole.SystemAdmin)}")]
         public async Task<IActionResult> CreateEvent([FromBody] Event @event)
         {
-            // Kulübün var olup olmadığını kontrol et
             var clubExists = await _context.Clubs.AnyAsync(c => c.Id == @event.ClubId);
             if (!clubExists)
                 return NotFound(new { message = "Kulüp bulunamadı." });
@@ -73,10 +104,31 @@ namespace UniversityClubSystem.Controllers
         }
 
         /// <summary>
+        /// Giriş yapmış kullanıcının bir etkinliğe katılma isteği göndermesini sağlar.
+        /// POST /api/events/{id}/join
+        /// </summary>
+        [HttpPost("api/events/{id:int}/join")]
+        [Authorize]
+        public async Task<IActionResult> JoinEvent(int id)
+        {
+            // JWT token'dan UserId'yi oku
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized(new { message = "Geçersiz token." });
+
+            var (success, message) = await _eventRequestService.CreateRequestAsync(userId, id);
+
+            if (!success)
+                return BadRequest(new { message });
+
+            return Ok(new { message });
+        }
+
+        /// <summary>
         /// Etkinliğin aktiflik durumunu günceller.
         /// PUT /api/events/{id}/toggle
         /// </summary>
-        [HttpPut("{id:int}/toggle")]
+        [HttpPut("api/events/{id:int}/toggle")]
         [Authorize(Roles = $"{nameof(UserRole.ClubManager)},{nameof(UserRole.SystemAdmin)}")]
         public async Task<IActionResult> ToggleEventStatus(int id)
         {

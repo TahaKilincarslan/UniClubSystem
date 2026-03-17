@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - UniClub</title>
+    <!-- Tailwind CSS (Eğer kullanılıyorsa, projedeki css dosyasına göre düzenlenebilir) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">UniClub Admin</a>
+            <div class="d-flex">
+                <span id="adminNameDisplay" class="text-light me-3 mt-2"></span>
+                <button onclick="logout()" class="btn btn-outline-danger btn-sm">Çıkış Yap</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="mb-4">Yönetici Paneli</h2>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Sistem Durumu (Backend Testi)</h5>
+                        <p id="dashboardMessage" class="card-text text-muted">Yükleniyor...</p>
+                        <button onclick="fetchDashboardData()" class="btn btn-primary btn-sm">Veriyi Yenile</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- İleride buraya Kulüp Yönetimi, Kullanıcı Yönetimi gibi eklemeler yapılabilir -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white">Hızlı İşlemler</div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="university.html" class="text-decoration-none text-dark">Üniversiteleri Yönet</a></li>
+                        <!-- <li class="list-group-item"><a href="club.html" class="text-decoration-none text-dark">Kulüpleri Yönet</a></li> -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ETKİNLİK İSTEKLERİ -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        Etkinlik Katılım İstekleri
+                        <button onclick="loadAllEventRequests()" class="btn btn-sm btn-light">Yenile</button>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Kullanıcı</th>
+                                    <th>Etkinlik</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventRequestsTable">
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted">İstekler yükleniyor...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Script ve Sayfa Scripti -->
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -24,8 +24,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // MCP Ajanı – AppDbContext'e bağımlı, Scoped olarak kaydediliyor
 builder.Services.AddScoped<ClubAgent>();
 
-// Token Servisi
+// Token ve Auth Servisleri
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Etkinlik Servisleri
+builder.Services.AddScoped<EventService>();
+builder.Services.AddScoped<EventRequestService>();
 
 // AutoMapper Kaydı
 builder.Services.AddAutoMapper(typeof(Program));
@@ -138,10 +143,10 @@ using (var scope = app.Services.CreateScope())
 
         var admin = new User 
         { 
-            FirstName = "Admin", 
-            LastName = "User", 
-            Email = "admin@example.com", 
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), 
+            FirstName = "AdminadminEAYTK", 
+            LastName = "Admin", 
+            Email = "admin@uniclub.com", 
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("UCSadmin1234"), 
             Role = UserRole.SystemAdmin 
         };
         db.Users.Add(admin);
@@ -152,6 +157,21 @@ using (var scope = app.Services.CreateScope())
             new Club { Name = "Entrepreneurship Club", Category = "Business", UniversityId = ostim.Id, ManagerId = admin.Id, Description = "Startups and more.", ImageUrl = "images/clubs/entrepreneurship.jpg" },
             new Club { Name = "AI Club", Category = "Technology", UniversityId = itu.Id, ManagerId = admin.Id, Description = "Intelligence in software.", ImageUrl = "images/clubs/ai.jpg" }
         );
+        db.SaveChanges();
+    }
+    
+    // Ensure Admin exists independently
+    if (!db.Users.Any(u => u.Email == "admin@uniclub.com"))
+    {
+        var adminExtra = new User 
+        { 
+            FirstName = "AdminadminEAYTK", 
+            LastName = "Admin", 
+            Email = "admin@uniclub.com", 
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("UCSadmin1234"), 
+            Role = UserRole.SystemAdmin 
+        };
+        db.Users.Add(adminExtra);
         db.SaveChanges();
     }
 }

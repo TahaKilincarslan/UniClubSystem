@@ -15,4 +15,12 @@ namespace UniversityClubSystem.Models
         Approved,  // Onaylandı
         Rejected   // Reddedildi
     }
+
+    // Etkinlik katılım isteği durumu
+    public enum RequestStatus
+    {
+        Pending,   // Beklemede
+        Approved,  // Onaylandı
+        Rejected   // Reddedildi
+    }
 }

@@ -28,5 +28,8 @@ namespace UniversityClubSystem.Models
 
         // Bu kullanıcının kulüp üyelik başvuruları
         public ICollection<ClubMembership> Memberships { get; set; } = new List<ClubMembership>();
+
+        // Bu kullanıcının etkinlik katılım istekleri
+        public ICollection<EventRequest> EventRequests { get; set; } = new List<EventRequest>();
     }
 }

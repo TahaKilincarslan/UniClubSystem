@@ -21,17 +21,20 @@ body: JSON.stringify(loginData)
 
 })
 
-if(response.ok){
+if (response.ok) {
+    const user = await response.json();
 
-const user = await response.json()
+    // kullanıcıyı tarayıcıya kaydet
+    localStorage.setItem("user", JSON.stringify(user));
 
-// kullanıcıyı tarayıcıya kaydet
-localStorage.setItem("user", JSON.stringify(user))
-
-// anasayfaya yönlendir
-window.location.href="index.html"
-
-}else{
+    // Rol "SystemAdmin" ise Admin Paneline yönlendir
+    if (user.role === "SystemAdmin") {
+        window.location.href = "admin.html";
+    } else {
+        // Değilse anasayfaya yönlendir
+        window.location.href = "index.html";
+    }
+} else {
 
 alert("Invalid email or password")
 

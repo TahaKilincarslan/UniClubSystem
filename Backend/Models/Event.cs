@@ -30,5 +30,8 @@ namespace UniversityClubSystem.Models
         // --- Navigation Property ---
         [ForeignKey(nameof(ClubId))]
         public Club Club { get; set; } = null!;
+
+        // Etkinliğe gelen katılım istekleri
+        public ICollection<EventRequest> EventRequests { get; set; } = new List<EventRequest>();
     }
 }

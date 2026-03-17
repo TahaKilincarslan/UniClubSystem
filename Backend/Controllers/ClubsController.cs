@@ -80,17 +80,42 @@ namespace UniversityClubSystem.Controllers
         }
 
         /// <summary>
-        /// Yeni bir kulüp oluşturur.
-        /// POST /api/clubs
+        /// Mevcut bir kulübü günceller.
+        /// PUT /api/clubs/{id}
         /// </summary>
-        [HttpPost]
-        [Authorize(Roles = nameof(UserRole.SystemAdmin))] // Sadece Admin kulüp oluşturabilir
-        public async Task<IActionResult> CreateClub([FromBody] Club club)
+        [HttpPut("{id}")]
+        [Authorize(Roles = nameof(UserRole.SystemAdmin))]
+        public async Task<IActionResult> UpdateClub(int id, [FromBody] Club club)
         {
-            club.CreatedDate = DateTime.UtcNow;
-            _context.Clubs.Add(club);
+            if (id != club.Id) return BadRequest("ID mismatch");
+
+            var existingClub = await _context.Clubs.FindAsync(id);
+            if (existingClub == null) return NotFound();
+
+            existingClub.Name = club.Name;
+            existingClub.Description = club.Description;
+            existingClub.Category = club.Category;
+            existingClub.ImageUrl = club.ImageUrl;
+
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetClubDetail), new { id = club.Id }, club);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Bir kulübü siler.
+        /// DELETE /api/clubs/{id}
+        /// </summary>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = nameof(UserRole.SystemAdmin))]
+        public async Task<IActionResult> DeleteClub(int id)
+        {
+            var club = await _context.Clubs.FindAsync(id);
+            if (club == null) return NotFound();
+
+            _context.Clubs.Remove(club);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Kulüp başarıyla silindi." });
         }
     }
 }

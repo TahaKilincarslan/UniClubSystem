@@ -50,16 +50,44 @@ namespace UniversityClubSystem.Controllers
         }
 
         /// <summary>
-        /// Yeni bir üniversite ekler.
-        /// POST /api/universities
+        /// Mevcut bir üniversiteyi günceller.
+        /// PUT /api/universities/{id}
         /// </summary>
-        [HttpPost]
-        [Authorize(Roles = nameof(UserRole.SystemAdmin))] // Sadece Admin ekleyebilir
-        public async Task<IActionResult> CreateUniversity([FromBody] University university)
+        [HttpPut("{id}")]
+        [Authorize(Roles = nameof(UserRole.SystemAdmin))]
+        public async Task<IActionResult> UpdateUniversity(int id, [FromBody] University university)
         {
-            _context.Universities.Add(university);
+            if (id != university.Id) return BadRequest("ID mismatch");
+
+            var existingUni = await _context.Universities.FindAsync(id);
+            if (existingUni == null) return NotFound();
+
+            existingUni.Name = university.Name;
+            existingUni.City = university.City;
+            existingUni.LogoUrl = university.LogoUrl;
+
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetUniversities), new { id = university.Id }, university);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Bir üniversiteyi ve ona bağlı tüm kulüpleri siler.
+        /// DELETE /api/universities/{id}
+        /// </summary>
+        [HttpDelete("{id}")]
+        [Authorize(Roles = nameof(UserRole.SystemAdmin))]
+        public async Task<IActionResult> DeleteUniversity(int id)
+        {
+            var university = await _context.Universities
+                .Include(u => u.Clubs)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (university == null) return NotFound();
+
+            _context.Universities.Remove(university);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Üniversite ve bağlı tüm kulüpler başarıyla silindi." });
         }
     }
 }

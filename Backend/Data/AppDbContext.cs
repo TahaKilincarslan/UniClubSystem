@@ -13,6 +13,7 @@ namespace UniversityClubSystem.Data
         public DbSet<Club> Clubs { get; set; }
         public DbSet<ClubMembership> ClubMemberships { get; set; }
         public DbSet<Event> Events { get; set; }
+        public DbSet<EventRequest> EventRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,6 +84,32 @@ namespace UniversityClubSystem.Data
                       .WithMany(c => c.Events)
                       .HasForeignKey(e => e.ClubId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // --- EventRequest Yapılandırması ---
+            modelBuilder.Entity<EventRequest>(entity =>
+            {
+                // Durum enum'ını veritabanında string olarak sakla
+                entity.Property(r => r.Status)
+                      .HasConversion<string>()
+                      .HasMaxLength(50);
+
+                // EventRequest → User ilişkisi
+                entity.HasOne(r => r.User)
+                      .WithMany(u => u.EventRequests)
+                      .HasForeignKey(r => r.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // EventRequest → Event ilişkisi
+                entity.HasOne(r => r.Event)
+                      .WithMany(e => e.EventRequests)
+                      .HasForeignKey(r => r.EventId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Aynı kullanıcı aynı etkinliğe birden fazla "Pending" veya "Approved" istek atmasını engellemek için
+                // NOT: Bu veritabanı seviyesinde zordur (duruma bağlı), kod tarafında kontrol edeceğiz.
+                // Ancak hızlı filtreleme için index ekleyebiliriz.
+                entity.HasIndex(r => new { r.UserId, r.EventId });
             });
 
             base.OnModelCreating(modelBuilder);

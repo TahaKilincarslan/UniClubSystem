@@ -13,7 +13,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             const navButtons = document.getElementById("navButtons")
 
             if(navButtons){
+                let adminBtn = "";
+                if (user.role === "SystemAdmin") {
+                    adminBtn = `<a href="admin.html" class="btn btn-warning me-2">Admin Panel</a>`;
+                }
+
                 navButtons.innerHTML = `
+                ${adminBtn}
                 <a href="profile.html" class="btn btn-outline-dark me-2">
                 Profile
                 </a>
@@ -69,6 +75,17 @@ document.addEventListener("DOMContentLoaded", async function () {
             col.className = "col-md-4 university-card";
             col.setAttribute("data-city", uni.city);
 
+            // Admin kontrolü: Üniversite yönetimi butonları
+            let adminActions = "";
+            if (typeof isAdmin === 'function' && isAdmin()) {
+                adminActions = `
+                    <div class="mt-2 d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary w-100" onclick="handleEdit(${uni.id}, '${uni.name}', '${uni.city}', '${uni.logoUrl || ''}')">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger w-100" onclick="handleDelete(${uni.id})">Delete</button>
+                    </div>
+                `;
+            }
+
             col.innerHTML = `
                 <div class="card shadow-sm p-3 h-100">
                     <img src="${uni.logoUrl || 'images/universities/default.png'}"
@@ -83,11 +100,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                             ${uni.clubCount || 0} Clubs • ${uni.city}
                         </p>
 
-                        <a href="university.html?id=${uni.id}&name=${encodeURIComponent(uni.name)}"
+                        <a href="university.html?id=${uni.id}&name=${encodeURIComponent(uni.name)}&image=${encodeURIComponent(uni.logoUrl || '')}"
                            class="btn btn-outline-dark mt-auto w-100">
                            View Clubs
                         </a>
-
+                        ${adminActions}
                     </div>
                 </div>
             `;
@@ -104,6 +121,54 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     renderUniversities(universities);
+
+    /* =========================
+       ADMIN ACTIONS (EDIT/DELETE)
+    ========================== */
+
+    window.handleEdit = function(id, name, city, logoUrl) {
+        document.getElementById("editUniId").value = id;
+        document.getElementById("editUniName").value = name;
+        document.getElementById("editUniCity").value = city;
+        document.getElementById("editUniLogo").value = logoUrl;
+        
+        const modal = new bootstrap.Modal(document.getElementById('editUniversityModal'));
+        modal.show();
+    };
+
+    const editForm = document.getElementById("editUniversityForm");
+    if (editForm) {
+        editForm.addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const id = document.getElementById("editUniId").value;
+            const universityData = {
+                id: parseInt(id),
+                name: document.getElementById("editUniName").value,
+                city: document.getElementById("editUniCity").value,
+                logoUrl: document.getElementById("editUniLogo").value
+            };
+
+            const success = await ApiService.updateUniversity(id, universityData);
+            if (success) {
+                alert("University updated successfully!");
+                location.reload();
+            } else {
+                alert("Error updating university.");
+            }
+        });
+    }
+
+    window.handleDelete = async function(id) {
+        if (confirm("Are you sure you want to delete this university? All clubs belonging to it will also be deleted!")) {
+            const success = await ApiService.deleteUniversity(id);
+            if (success) {
+                alert("University deleted!");
+                location.reload();
+            } else {
+                alert("Error deleting university.");
+            }
+        }
+    };
 
     /* =========================
        SEARCH + CITY FILTER
