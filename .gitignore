@@ -1,0 +1,5 @@
+Backend/bin/
+Backend/obj/
+Backend/wwwroot/uploads/
+*.user
+.DS_Store

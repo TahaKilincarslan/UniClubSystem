@@ -80,6 +80,41 @@ namespace UniversityClubSystem.Controllers
         }
 
         /// <summary>
+        /// Yeni bir kulüp ekler.
+        /// POST /api/clubs
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = nameof(UserRole.SystemAdmin))]
+        public async Task<IActionResult> CreateClub([FromBody] CreateClubDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Category))
+                return BadRequest("Name and Category are required.");
+
+            var universityExists = await _context.Universities.AnyAsync(u => u.Id == dto.UniversityId);
+            if (!universityExists)
+                return NotFound(new { message = "Üniversite bulunamadı." });
+
+            var userIdClaim = User.FindFirst("nameid")?.Value;
+            if (!int.TryParse(userIdClaim, out int managerId))
+                return Unauthorized(new { message = "Token'dan kullanıcı ID okunamadı.", claim = userIdClaim });
+
+            var club = new Club
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Category = dto.Category,
+                ImageUrl = dto.ImageUrl,
+                UniversityId = dto.UniversityId,
+                ManagerId = managerId,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            _context.Clubs.Add(club);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetClubsByUniversity), new { universityId = club.UniversityId }, club);
+        }
+
+        /// <summary>
         /// Mevcut bir kulübü günceller.
         /// PUT /api/clubs/{id}
         /// </summary>

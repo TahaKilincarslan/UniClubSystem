@@ -5,6 +5,7 @@ using UniversityClubSystem.Models;
 using UniversityClubSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using UniversityClubSystem.DTOs;
 
 namespace UniversityClubSystem.Controllers
 {
@@ -91,16 +92,57 @@ namespace UniversityClubSystem.Controllers
         /// </summary>
         [HttpPost("api/events/create")]
         [Authorize(Roles = $"{nameof(UserRole.ClubManager)},{nameof(UserRole.SystemAdmin)}")]
-        public async Task<IActionResult> CreateEvent([FromBody] Event @event)
+        public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto dto)
         {
-            var clubExists = await _context.Clubs.AnyAsync(c => c.Id == @event.ClubId);
+            var clubExists = await _context.Clubs.AnyAsync(c => c.Id == dto.ClubId);
             if (!clubExists)
                 return NotFound(new { message = "Kulüp bulunamadı." });
 
-            @event.IsActive = true;
+            var @event = new Event
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                Date = dto.Date.ToUniversalTime(),
+                Location = dto.Location,
+                ClubId = dto.ClubId,
+                IsActive = true
+            };
+
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetEvents), new { id = @event.Id }, @event);
+        }
+
+        /// <summary>
+        /// Giriş yapmış kullanıcının tüm etkinlik isteklerini döndürür.
+        /// GET /api/events/my-requests
+        /// </summary>
+        [HttpGet("api/events/my-requests")]
+        [Authorize]
+        public async Task<IActionResult> GetMyRequests()
+        {
+            var userIdClaim = User.FindFirst("nameid")?.Value;
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var requests = await _context.EventRequests
+                .Where(r => r.UserId == userId)
+                .Select(r => new
+                {
+                    r.EventId,
+                    EventTitle = r.Event.Title,
+                    EventDate = r.Event.Date,
+                    EventLocation = r.Event.Location,
+                    ClubId = r.Event.ClubId,
+                    ClubName = r.Event.Club.Name,
+                    UniversityName = r.Event.Club.University.Name,
+                    Status = r.Status.ToString(),
+                    r.RequestDate
+                })
+                .OrderByDescending(r => r.RequestDate)
+                .ToListAsync();
+
+            return Ok(requests);
         }
 
         /// <summary>
@@ -112,7 +154,7 @@ namespace UniversityClubSystem.Controllers
         public async Task<IActionResult> JoinEvent(int id)
         {
             // JWT token'dan UserId'yi oku
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userIdClaim = User.FindFirst("nameid")?.Value;
             if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
                 return Unauthorized(new { message = "Geçersiz token." });
 

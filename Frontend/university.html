@@ -60,6 +60,45 @@
             </div>
         </div>
 
+        <!-- KULÜP EKLE (sadece admin görür) -->
+        <div id="addClubSection" class="d-none mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">Yeni Kulüp Ekle</div>
+                <div class="card-body">
+                    <form id="addClubForm" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Kulüp Adı</label>
+                            <input type="text" id="newClubName" class="form-control" placeholder="Örn: Robotics Club" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Kategori</label>
+                            <select id="newClubCategory" class="form-select" required>
+                                <option value="">Seç...</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Business">Business</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Arts">Arts</option>
+                                <option value="Health">Health</option>
+                                <option value="Social">Social</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Açıklama</label>
+                            <input type="text" id="newClubDescription" class="form-control" placeholder="Kısa açıklama">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Resim</label>
+                            <input type="file" id="newClubImageFile" class="form-control" accept="image/*">
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100">Ekle</button>
+                        </div>
+                    </form>
+                    <div id="addClubMessage" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- CLUBS SECTION -->
         <div class="mt-4">
 

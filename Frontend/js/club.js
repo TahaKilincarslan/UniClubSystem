@@ -46,18 +46,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const clubHeader = document.getElementById("clubHeader");
 
     try {
-        // Fetch specific club details (Wait, we need a getClubById in ApiService)
-        // For now, let's look for the club in the list or assume we have the detail endpoint.
-        // Actually, let's use the getClubsByUniversity and find it, or I should have added getClubDetail.
-        // I added getEventDetail but not specifically getClubDetail. 
-        // Let's check ClubsController. It has GetClubDetail(int id).
-        
-        // I'll add getClubDetail to ApiService if it's missing (I only added event ones).
-        // Wait, I saw GetClubDetail in ClubsController earlier.
-        
-        // Let's use fetch directly or update ApiService. 
-        // I'll update ApiService to include getClubDetail.
-        
         const response = await fetch(`http://localhost:5149/api/clubs/detail/${clubId}`);
         if (!response.ok) throw new Error("Club not found");
         const club = await response.json();
@@ -68,8 +56,19 @@ document.addEventListener("DOMContentLoaded", async function () {
         clubManagerElement.textContent = club.managerName || "Not assigned";
         
         if (club.imageUrl) {
-            clubHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${club.imageUrl}')`;
+            const imgUrl = club.imageUrl.startsWith('http') ? club.imageUrl
+                : club.imageUrl.startsWith('/uploads/') ? MEDIA_BASE_URL + club.imageUrl
+                : club.imageUrl;
+            clubHeader.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${imgUrl}')`;
         }
+
+        // Admin ise etkinlik ekleme formunu göster
+        if (typeof isAdmin === 'function' && isAdmin()) {
+            document.getElementById("addEventSection").classList.remove("d-none");
+        }
+
+        // Kulübe katılma butonu
+        await renderMembershipButton(clubId);
 
         loadEvents(clubId);
 
@@ -77,6 +76,86 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.error("Error loading club details:", error);
         clubNameElement.textContent = "Error loading club";
     }
+
+    /* =========================
+       KULÜP ÜYELİK BUTONU
+    ========================== */
+    async function renderMembershipButton(clubId) {
+        const container = document.getElementById("membershipContainer");
+        if (!container) return;
+
+        if (!isLoggedIn()) {
+            container.innerHTML = `<a href="login.html" class="btn btn-outline-dark w-100">Katılmak için giriş yap</a>`;
+            return;
+        }
+
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user.role === "SystemAdmin") return; // Admin için gösterme
+
+        const memberships = await ApiService.getMyMemberships();
+        const existing = memberships.find(m => m.clubId === parseInt(clubId));
+
+        if (existing) {
+            if (existing.status === "Pending") {
+                container.innerHTML = `<button class="btn btn-warning w-100" disabled>⏳ Başvuru Bekleniyor</button>`;
+            } else if (existing.status === "Approved") {
+                container.innerHTML = `<button class="btn btn-success w-100" disabled>✓ Üyesiniz</button>`;
+            } else if (existing.status === "Rejected") {
+                container.innerHTML = `
+                    <div class="text-danger small mb-2">✗ Başvurunuz reddedildi.</div>
+                    <button id="applyBtn" class="btn btn-outline-dark w-100">Tekrar Başvur</button>
+                `;
+                document.getElementById("applyBtn").addEventListener("click", async () => {
+                    const result = await ApiService.applyToClub(parseInt(clubId));
+                    alert(result.message);
+                    if (result.ok) await renderMembershipButton(clubId);
+                });
+            }
+        } else {
+            container.innerHTML = `<button id="applyBtn" class="btn btn-dark w-100">Kulübe Katılmak İstiyorum</button>`;
+            document.getElementById("applyBtn").addEventListener("click", async () => {
+                const result = await ApiService.applyToClub(parseInt(clubId));
+                alert(result.message);
+                if (result.ok) await renderMembershipButton(clubId);
+            });
+        }
+    }
+
+    /* =========================
+       ETKİNLİK EKLEME FORMU
+    ========================== */
+    document.getElementById("addEventForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const msgEl = document.getElementById("addEventMessage");
+        msgEl.innerHTML = `<div class="alert alert-info py-1">Kaydediliyor...</div>`;
+
+        try {
+            const eventData = {
+                title: document.getElementById("newEventTitle").value.trim(),
+                description: document.getElementById("newEventDescription").value.trim(),
+                date: document.getElementById("newEventDate").value,
+                location: document.getElementById("newEventLocation").value.trim(),
+                clubId: parseInt(clubId)
+            };
+
+            const response = await fetch(`http://localhost:5149/api/events/create`, {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(eventData)
+            });
+
+            if (response.ok) {
+                msgEl.innerHTML = `<div class="alert alert-success py-1">"${eventData.title}" etkinliği eklendi!</div>`;
+                this.reset();
+                loadEvents(clubId);
+            } else {
+                const err = await response.text();
+                msgEl.innerHTML = `<div class="alert alert-danger py-1">Hata: ${response.status} - ${err}</div>`;
+            }
+        } catch (err) {
+            msgEl.innerHTML = `<div class="alert alert-danger py-1">Hata: ${err.message}</div>`;
+        }
+    });
 
     /* =========================
        LOAD EVENTS
@@ -87,6 +166,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         eventList.innerHTML = "";
 
         const events = await ApiService.getClubEvents(id);
+        const myRequests = isLoggedIn() ? await ApiService.getMyEventRequests() : [];
+        const requestMap = {};
+        myRequests.forEach(r => { requestMap[r.eventId] = r.status; });
 
         if (events.length === 0) {
             noEvents.classList.remove("d-none");
@@ -95,31 +177,71 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         noEvents.classList.add("d-none");
 
-        events.forEach(event => {
-            const eventDate = new Date(event.date).toLocaleDateString();
+        const now = new Date();
+        const upcoming = events.filter(e => new Date(e.date) >= now);
+        const past = events.filter(e => new Date(e.date) < now);
+
+        function createEventCard(event, isPast) {
+            const eventDate = new Date(event.date).toLocaleDateString("tr-TR", {
+                day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+            });
+
+            let actionBtn;
+            if (isPast) {
+                actionBtn = `<button class="btn btn-secondary w-100" disabled>Etkinlik Sona Erdi</button>`;
+            } else {
+                const status = requestMap[event.id];
+                if (status === "Pending") {
+                    actionBtn = `<button class="btn btn-warning w-100" disabled>⏳ İstek Gönderildi</button>`;
+                } else if (status === "Approved") {
+                    actionBtn = `<button class="btn btn-success w-100" disabled>✓ Onaylandı</button>`;
+                } else if (status === "Rejected") {
+                    actionBtn = `<button class="btn btn-danger w-100" disabled>✗ Reddedildi</button>`;
+                } else {
+                    actionBtn = `<button class="btn btn-primary w-100 join-event-btn" data-event-id="${event.id}">Katılmak İstiyorum</button>`;
+                }
+            }
+
             const col = document.createElement("div");
             col.className = "col-md-6";
             col.innerHTML = `
-                <div class="card event-card h-100 p-3">
+                <div class="card event-card h-100 p-3 ${isPast ? 'opacity-75' : ''}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h5 class="fw-bold">${event.title}</h5>
-                            <span class="badge bg-secondary">${eventDate}</span>
+                            <span class="badge ${isPast ? 'bg-secondary' : 'bg-primary'}">${eventDate}</span>
                         </div>
                         <p class="text-muted small">${event.description}</p>
                         <div class="mb-3">
-                            <i class="bi bi-geo-alt"></i> <strong>Location:</strong> ${event.location}
+                            <strong>Konum:</strong> ${event.location}
                         </div>
-                        <button class="btn btn-primary w-100 join-event-btn" data-event-id="${event.id}">
-                            Join Event
-                        </button>
+                        ${actionBtn}
                     </div>
                 </div>
             `;
-            eventList.appendChild(col);
-        });
+            return col;
+        }
 
-        // Add event listeners for Join buttons
+        if (upcoming.length > 0) {
+            const heading = document.createElement("div");
+            heading.className = "col-12";
+            heading.innerHTML = `<h5 class="fw-bold text-primary mb-2">Yaklaşan Etkinlikler</h5>`;
+            eventList.appendChild(heading);
+            upcoming.forEach(e => eventList.appendChild(createEventCard(e, false)));
+        }
+
+        if (past.length > 0) {
+            const heading = document.createElement("div");
+            heading.className = "col-12 mt-4";
+            heading.innerHTML = `<h5 class="fw-bold text-secondary mb-2">Geçmiş Etkinlikler</h5>`;
+            eventList.appendChild(heading);
+            past.forEach(e => eventList.appendChild(createEventCard(e, true)));
+        }
+
+        if (upcoming.length === 0 && past.length === 0) {
+            noEvents.classList.remove("d-none");
+        }
+
         document.querySelectorAll(".join-event-btn").forEach(btn => {
             btn.addEventListener("click", handleJoinRequest);
         });
@@ -144,13 +266,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         const result = await ApiService.joinEvent(eventId);
         
         if (result.ok) {
-            alert(result.message || "Join request sent successfully!");
-            btn.textContent = "Request Sent";
+            alert(result.message || "İstek başarıyla gönderildi!");
+            btn.textContent = "İstek Gönderildi";
             btn.classList.replace("btn-primary", "btn-success");
         } else {
-            alert(result.message || "Failed to send join request.");
+            alert(result.message || "İstek gönderilemedi.");
             btn.disabled = false;
-            btn.textContent = "Join Event";
+            btn.textContent = "Katılmak İstiyorum";
         }
     }
 });

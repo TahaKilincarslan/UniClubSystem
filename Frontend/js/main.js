@@ -20,13 +20,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 navButtons.innerHTML = `
                 ${adminBtn}
-                <a href="profile.html" class="btn btn-outline-dark me-2">
-                Profile
-                </a>
-
-                <button class="btn btn-dark" onclick="logout()">
-                Logout
-                </button>
+                <a href="my-activities.html" class="btn btn-outline-dark me-2">Aktivitelerim</a>
+                <a href="profile.html" class="btn btn-outline-dark me-2">Profilim</a>
+                <button class="btn btn-dark" onclick="logout()">Çıkış Yap</button>
                 `
             }
 
@@ -88,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             col.innerHTML = `
                 <div class="card shadow-sm p-3 h-100">
-                    <img src="${uni.logoUrl || 'images/universities/default.png'}"
+                    <img src="${uni.logoUrl ? (uni.logoUrl.startsWith('http') ? uni.logoUrl : uni.logoUrl.startsWith('/uploads/') ? MEDIA_BASE_URL + uni.logoUrl : uni.logoUrl) : 'images/universities/default.png'}"
                      class="card-img-top uni-img"
                      onerror="this.src='images/universities/default.png'">
 
@@ -203,9 +199,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     ========================== */
 
     let clubCount = 0;
+    let memberCount = 0;
 
     universities.forEach(uni => {
         clubCount += uni.clubCount || 0;
+        memberCount += uni.studentCount || 0;
     });
 
     /* =========================
@@ -235,6 +233,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     animateCounter(totalUniversities, universities.length);
     animateCounter(totalClubs, clubCount);
-    animateCounter(totalMembers, 0);
+    animateCounter(totalMembers, memberCount);
 
 });

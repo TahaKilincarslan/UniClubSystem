@@ -1,4 +1,5 @@
 const API_BASE_URL = "http://localhost:5149/api";
+const MEDIA_BASE_URL = "http://localhost:5149";
 
 const ApiService = {
     // Universities
@@ -33,6 +34,40 @@ const ApiService = {
         }
     },
 
+    // Upload Image
+    async uploadImage(folder, file) {
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            const response = await fetch(`${API_BASE_URL}/media/upload/${folder}`, {
+                method: "POST",
+                headers: getAuthHeaders(false),
+                body: formData
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data.url;
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            return null;
+        }
+    },
+
+    // Create University
+    async createUniversity(universityData) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/universities`, {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(universityData)
+            });
+            return response.ok;
+        } catch (error) {
+            console.error("Error creating university:", error);
+            return false;
+        }
+    },
+
     // Update University
     async updateUniversity(id, universityData) {
         try {
@@ -59,6 +94,26 @@ const ApiService = {
         } catch (error) {
             console.error("Error deleting university:", error);
             return false;
+        }
+    },
+
+    // Create Club
+    async createClub(clubData) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/clubs`, {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(clubData)
+            });
+            if (!response.ok) {
+                const err = await response.text();
+                console.error("Create club error:", response.status, err);
+                return { ok: false, message: `${response.status}: ${err}` };
+            }
+            return { ok: true };
+        } catch (error) {
+            console.error("Error creating club:", error);
+            return { ok: false, message: error.message };
         }
     },
 
@@ -130,6 +185,47 @@ const ApiService = {
         }
     },
 
+    async getMyMemberships() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/memberships/my`, {
+                headers: getAuthHeaders()
+            });
+            if (!response.ok) return [];
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching memberships:", error);
+            return [];
+        }
+    },
+
+    async applyToClub(clubId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/memberships/apply`, {
+                method: "POST",
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ clubId })
+            });
+            const data = await response.json();
+            return { ok: response.ok, message: data.message };
+        } catch (error) {
+            console.error("Error applying to club:", error);
+            return { ok: false, message: "Bir hata oluştu." };
+        }
+    },
+
+    async getMyEventRequests() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/my-requests`, {
+                headers: getAuthHeaders()
+            });
+            if (!response.ok) return [];
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching my requests:", error);
+            return [];
+        }
+    },
+
     async joinEvent(eventId) {
         try {
             const response = await fetch(`${API_BASE_URL}/events/${eventId}/join`, {
@@ -140,7 +236,7 @@ const ApiService = {
             return { ok: response.ok, message: data.message };
         } catch (error) {
             console.error("Error joining event:", error);
-            return { ok: false, message: "An error occurred." };
+            return { ok: false, message: "Bir hata oluştu." };
         }
     },
 

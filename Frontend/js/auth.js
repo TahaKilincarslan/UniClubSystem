@@ -20,11 +20,14 @@ function requireAdmin() {
 }
 
 // API istekleri için Authorization başlığını (Header) döndürür
-function getAuthHeaders() {
+// includeContentType=false: FormData yüklemelerinde kullan (tarayıcı otomatik ayarlar)
+function getAuthHeaders(includeContentType = true) {
     const user = JSON.parse(localStorage.getItem("user"));
-    const headers = {
-        "Content-Type": "application/json"
-    };
+    const headers = {};
+
+    if (includeContentType) {
+        headers["Content-Type"] = "application/json";
+    }
 
     if (user && user.token) {
         headers["Authorization"] = `Bearer ${user.token}`;

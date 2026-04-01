@@ -2,45 +2,98 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Register</title>
-
+<title>Register - UniClubs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
 </head>
 
 <body class="bg-light">
 
 <div class="container d-flex justify-content-center align-items-center vh-100">
 
-<div class="card shadow p-4" style="width:400px">
+<div class="card shadow p-4" style="width:420px">
 
 <h3 class="text-center mb-4">Create Account</h3>
 
 <form id="registerForm">
+    <input class="form-control mb-3" id="firstName" placeholder="First Name" required>
+    <input class="form-control mb-3" id="lastName" placeholder="Last Name" required>
+    <input class="form-control mb-3" id="email" type="email" placeholder="Email" required>
+    <input class="form-control mb-3" id="password" type="password" placeholder="Password" required>
 
-<input class="form-control mb-3" id="firstName" placeholder="First Name">
+    <select class="form-select mb-3" id="universityId" required>
+        <option value="">Select your university...</option>
+    </select>
 
-<input class="form-control mb-3" id="lastName" placeholder="Last Name">
-
-<input class="form-control mb-3" id="email" placeholder="Email">
-
-<input class="form-control mb-3" type="password" id="password" placeholder="Password">
-
-<button class="btn btn-dark w-100">
-Register
-</button>
-
+    <button class="btn btn-dark w-100" type="submit">Register</button>
 </form>
 
 <p class="text-center mt-3">
-Already have account?
-<a href="login.html">Login</a>
+    Already have an account? <a href="login.html">Login</a>
 </p>
 
 </div>
 </div>
 
-<script src="js/register.js"></script>
+<script>
+// Üniversiteleri API'den çek ve dropdown'a doldur
+async function loadUniversities() {
+    try {
+        const response = await fetch("http://localhost:5149/api/universities");
+        const universities = await response.json();
+        const select = document.getElementById("universityId");
+        universities.forEach(u => {
+            const option = document.createElement("option");
+            option.value = u.id;
+            option.textContent = u.name + " (" + u.city + ")";
+            select.appendChild(option);
+        });
+    } catch (e) {
+        console.error("Üniversiteler yüklenemedi:", e);
+    }
+}
+
+loadUniversities();
+
+document.getElementById("registerForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const universityId = document.getElementById("universityId").value;
+    if (!universityId) {
+        alert("Lütfen üniversitenizi seçin.");
+        return;
+    }
+
+    try {
+        const user = {
+            firstName: document.getElementById("firstName").value,
+            lastName: document.getElementById("lastName").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+            universityId: parseInt(universityId)
+        };
+
+        const response = await fetch("http://localhost:5149/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(user)
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            localStorage.setItem("user", JSON.stringify(userData));
+            window.location.href = "index.html";
+        } else {
+            const text = await response.text();
+            let msg = text;
+            try { msg = JSON.parse(text).message || text; } catch {}
+            alert("Hata: " + msg);
+        }
+    } catch (error) {
+        alert("Bağlantı hatası: " + error.message);
+    }
+});
+</script>
 
 </body>
 </html>

@@ -12,6 +12,7 @@ namespace UniversityClubSystem.DTOs
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public int? UniversityId { get; set; }
     }
 
     public class AuthResponseDto
@@ -21,5 +22,7 @@ namespace UniversityClubSystem.DTOs
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public int? UniversityId { get; set; }
+        public string? UniversityName { get; set; }
     }
 }

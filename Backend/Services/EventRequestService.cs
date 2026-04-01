@@ -21,14 +21,21 @@ namespace UniversityClubSystem.Services
         public async Task<(bool Success, string Message)> CreateRequestAsync(int userId, int eventId)
         {
             // Etkinlik var mı?
-            var eventExists = await _context.Events.AnyAsync(e => e.Id == eventId && e.IsActive);
-            if (!eventExists)
+            var @event = await _context.Events
+                .Include(e => e.Club)
+                .FirstOrDefaultAsync(e => e.Id == eventId && e.IsActive);
+            if (@event == null)
                 return (false, "Etkinlik bulunamadı veya aktif değil.");
+
+            // Kullanıcının üniversitesi etkinliğin kulübüyle eşleşiyor mu?
+            var user = await _context.Users.FindAsync(userId);
+            if (user?.UniversityId != null && user.UniversityId != @event.Club.UniversityId)
+                return (false, "Yalnızca kendi üniversitenizin etkinliklerine katılabilirsiniz.");
 
             // Kullanıcının mevcut aktif isteği var mı?
             var existingRequest = await _context.EventRequests
                 .AnyAsync(r => r.UserId == userId
-                            && r.EventId == eventId
+                            && r.EventId == @event.Id
                             && (r.Status == RequestStatus.Pending || r.Status == RequestStatus.Approved));
 
             if (existingRequest)
@@ -37,7 +44,7 @@ namespace UniversityClubSystem.Services
             var request = new EventRequest
             {
                 UserId = userId,
-                EventId = eventId,
+                EventId = @event.Id,
                 Status = RequestStatus.Pending,
                 RequestDate = DateTime.UtcNow
             };

@@ -3,81 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - UniClub</title>
-    <!-- Tailwind CSS (Eğer kullanılıyorsa, projedeki css dosyasına göre düzenlenebilir) -->
+    <title>Admin Paneli - UniClub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .university-block { border-left: 4px solid #212529; }
+        .club-block { border-left: 4px solid #0d6efd; }
+        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .badge-pending  { background: #ffc107; color: #000; }
+        .badge-approved { background: #198754; color: #fff; }
+        .badge-rejected { background: #dc3545; color: #fff; }
+    </style>
 </head>
-<body>
+<body class="bg-light">
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">UniClub Admin</a>
-            <div class="d-flex">
-                <span id="adminNameDisplay" class="text-light me-3 mt-2"></span>
-                <button onclick="logout()" class="btn btn-outline-danger btn-sm">Çıkış Yap</button>
-            </div>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">UniClub Admin</a>
+        <div class="d-flex align-items-center gap-3">
+            <span id="adminNameDisplay" class="text-light"></span>
+            <button onclick="logout()" class="btn btn-outline-danger btn-sm">Çıkış Yap</button>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <div class="container mt-5">
-        <h2 class="mb-4">Yönetici Paneli</h2>
-        
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Sistem Durumu (Backend Testi)</h5>
-                        <p id="dashboardMessage" class="card-text text-muted">Yükleniyor...</p>
-                        <button onclick="fetchDashboardData()" class="btn btn-primary btn-sm">Veriyi Yenile</button>
-                    </div>
-                </div>
-            </div>
+<div class="container mt-4">
+
+    <!-- TAB NAVİGASYON -->
+    <ul class="nav nav-tabs mb-4" id="adminTabs">
+        <li class="nav-item">
+            <button class="nav-link active" data-tab="requests">İstekler</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-tab="universities">Üniversite Ekle</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-tab="clubs">Kulüp Ekle</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-tab="events">Etkinlik Ekle</button>
+        </li>
+    </ul>
+
+    <!-- TAB: İSTEKLER -->
+    <div id="tab-requests">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Tüm İstekler</h5>
+            <button onclick="loadRequests()" class="btn btn-sm btn-outline-dark">Yenile</button>
         </div>
-        
-        <!-- İleride buraya Kulüp Yönetimi, Kullanıcı Yönetimi gibi eklemeler yapılabilir -->
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-secondary text-white">Hızlı İşlemler</div>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><a href="university.html" class="text-decoration-none text-dark">Üniversiteleri Yönet</a></li>
-                        <!-- <li class="list-group-item"><a href="club.html" class="text-decoration-none text-dark">Kulüpleri Yönet</a></li> -->
-                    </ul>
-                </div>
-            </div>
+        <div id="requestsContainer">
+            <p class="text-muted">Yükleniyor...</p>
+        </div>
+    </div>
 
-            <!-- ETKİNLİK İSTEKLERİ -->
-            <div class="col-md-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        Etkinlik Katılım İstekleri
-                        <button onclick="loadAllEventRequests()" class="btn btn-sm btn-light">Yenile</button>
+    <!-- TAB: ÜNİVERSİTE EKLE -->
+    <div id="tab-universities" class="d-none">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">Yeni Üniversite Ekle</div>
+            <div class="card-body">
+                <form id="addUniversityForm" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Üniversite Adı</label>
+                        <input type="text" id="newUniName" class="form-control" placeholder="Örn: Hacettepe Üniversitesi" required>
                     </div>
-                    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light sticky-top">
-                                <tr>
-                                    <th>Kullanıcı</th>
-                                    <th>Etkinlik</th>
-                                    <th>İşlem</th>
-                                </tr>
-                            </thead>
-                            <tbody id="eventRequestsTable">
-                                <tr>
-                                    <td colspan="3" class="text-center py-4 text-muted">İstekler yükleniyor...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="col-md-3">
+                        <label class="form-label">Şehir</label>
+                        <input type="text" id="newUniCity" class="form-control" placeholder="Örn: Ankara" required>
                     </div>
-                </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Logo Resmi</label>
+                        <input type="file" id="newUniLogoFile" class="form-control" accept="image/*">
+                        <div id="logoPreview" class="mt-2 d-none">
+                            <img id="logoPreviewImg" src="" alt="Önizleme" style="height:60px; border-radius:6px; border:1px solid #ddd;">
+                        </div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">Ekle</button>
+                    </div>
+                </form>
+                <div id="addUniMessage" class="mt-2"></div>
             </div>
         </div>
     </div>
 
-    <!-- Auth Script ve Sayfa Scripti -->
-    <script src="js/auth.js"></script>
-    <script src="js/admin.js"></script>
+    <!-- TAB: KULÜP EKLE -->
+    <div id="tab-clubs" class="d-none">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">Yeni Kulüp Ekle</div>
+            <div class="card-body">
+                <form id="addClubFormAdmin" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Üniversite</label>
+                        <select id="clubUniSelect" class="form-select" required>
+                            <option value="">Seçiniz...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Kulüp Adı</label>
+                        <input type="text" id="adminClubName" class="form-control" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Kategori</label>
+                        <select id="adminClubCategory" class="form-select" required>
+                            <option value="">Seçiniz...</option>
+                            <option>Technology</option>
+                            <option>Business</option>
+                            <option>Engineering</option>
+                            <option>Arts</option>
+                            <option>Health</option>
+                            <option>Social</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Açıklama</label>
+                        <input type="text" id="adminClubDescription" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Resim</label>
+                        <input type="file" id="adminClubImageFile" class="form-control" accept="image/*">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Ekle</button>
+                    </div>
+                </form>
+                <div id="addClubMessage" class="mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: ETKİNLİK EKLE -->
+    <div id="tab-events" class="d-none">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">Yeni Etkinlik Ekle</div>
+            <div class="card-body">
+                <form id="addEventFormAdmin" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Üniversite</label>
+                        <select id="eventUniSelect" class="form-select" required>
+                            <option value="">Seçiniz...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Kulüp</label>
+                        <select id="eventClubSelect" class="form-select" required>
+                            <option value="">Önce üniversite seçin</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Etkinlik Adı</label>
+                        <input type="text" id="adminEventTitle" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Konum</label>
+                        <input type="text" id="adminEventLocation" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tarih & Saat</label>
+                        <input type="datetime-local" id="adminEventDate" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Açıklama</label>
+                        <input type="text" id="adminEventDescription" class="form-control">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-warning w-100">Ekle</button>
+                    </div>
+                </form>
+                <div id="addEventMessage" class="mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/services/apiService.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>

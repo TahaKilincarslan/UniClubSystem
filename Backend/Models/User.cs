@@ -22,6 +22,17 @@ namespace UniversityClubSystem.Models
         // Kullanıcının rolü: Student, ClubManager, SystemAdmin
         public UserRole Role { get; set; } = UserRole.Student;
 
+        // Kayıtlı olduğu üniversite (opsiyonel — admin için null)
+        public int? UniversityId { get; set; }
+
+        [System.ComponentModel.DataAnnotations.MaxLength(200)]
+        public string? Department { get; set; }
+
+        public int? Year { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.ForeignKey(nameof(UniversityId))]
+        public University? University { get; set; }
+
         // --- Navigation Properties ---
         // Bu kullanıcının yönettiği kulüpler
         public ICollection<Club> ManagedClubs { get; set; } = new List<Club>();

@@ -24,7 +24,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (universityTitle) universityTitle.textContent = universityName + " University";
     if (universityDescription) universityDescription.textContent = "Welcome to " + universityName + ". Explore our student clubs and organizations.";
     if (universityImage) {
-        universityImage.src = universityImageUrl || 'images/universities/default.png';
+        const resolvedUrl = universityImageUrl
+            ? (universityImageUrl.startsWith('http') ? universityImageUrl
+                : universityImageUrl.startsWith('/uploads/') ? MEDIA_BASE_URL + universityImageUrl
+                : universityImageUrl)
+            : 'images/universities/default.png';
+        universityImage.src = resolvedUrl;
     }
 
     /* =========================
@@ -50,6 +55,50 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     updateNavbar();
 
+    // Admin ise kulüp ekleme formunu göster
+    if (typeof isAdmin === 'function' && isAdmin()) {
+        document.getElementById("addClubSection").classList.remove("d-none");
+    }
+
+    // Kulüp ekleme formu
+    document.getElementById("addClubForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const msgEl = document.getElementById("addClubMessage");
+        msgEl.innerHTML = `<div class="alert alert-info py-1">Kaydediliyor...</div>`;
+
+        try {
+            let imageUrl = null;
+            const fileInput = document.getElementById("newClubImageFile");
+            if (fileInput.files.length > 0) {
+                imageUrl = await ApiService.uploadImage("clubs", fileInput.files[0]);
+                if (!imageUrl) {
+                    msgEl.innerHTML = `<div class="alert alert-danger py-1">Resim yüklenirken hata oluştu.</div>`;
+                    return;
+                }
+            }
+
+            const clubData = {
+                name: document.getElementById("newClubName").value.trim(),
+                category: document.getElementById("newClubCategory").value,
+                description: document.getElementById("newClubDescription").value.trim(),
+                imageUrl: imageUrl,
+                universityId: parseInt(universityId)
+            };
+
+            const result = await ApiService.createClub(clubData);
+            if (result.ok) {
+                msgEl.innerHTML = `<div class="alert alert-success py-1">"${clubData.name}" başarıyla kaydedildi!</div>`;
+                this.reset();
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                alert("HATA: " + result.message);
+                msgEl.innerHTML = `<div class="alert alert-danger py-1">Kulüp kaydedilemedi: ${result.message}</div>`;
+            }
+        } catch (err) {
+            msgEl.innerHTML = `<div class="alert alert-danger py-1">Hata: ${err.message}</div>`;
+        }
+    });
+
     // Fetch clubs from API
     const clubs = await ApiService.getClubsByUniversity(universityId);
 
@@ -58,7 +107,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     ========================== */
 
     if (clubCountElement) clubCountElement.textContent = clubs.length;
-    if (studentCount) studentCount.textContent = "..."; // We don't have student count in API yet
+
+    // Üniversiteye kayıtlı öğrenci sayısını çek
+    if (studentCount) {
+        try {
+            const uniResponse = await fetch(`http://localhost:5149/api/universities`);
+            const unis = await uniResponse.json();
+            const thisUni = unis.find(u => u.id === parseInt(universityId));
+            studentCount.textContent = thisUni ? thisUni.studentCount : 0;
+        } catch { studentCount.textContent = 0; }
+    }
 
     /* =========================
        KULÜP RENDER FONKSİYONU
@@ -86,14 +144,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             col.innerHTML = `
                 <div class="card shadow-sm h-100">
-                    <img src="${club.imageUrl || 'images/clubs/default.jpg'}" 
+                    <img src="${club.imageUrl ? (club.imageUrl.startsWith('http') ? club.imageUrl : club.imageUrl.startsWith('/uploads/') ? MEDIA_BASE_URL + club.imageUrl : club.imageUrl) : 'images/clubs/default.jpg'}"
                          class="card-img-top"
                          style="height:180px; object-fit:cover;"
                          onerror="this.src='images/clubs/default.jpg'">
                     <div class="card-body d-flex flex-column">
                         <h5 class="fw-bold">${club.name}</h5>
                         <p class="text-muted">${club.category}</p>
-                        <p class="small text-secondary">${club.managerName || 'No Manager'}</p>
                         <a href="club.html?id=${club.id}" class="btn btn-dark mt-auto">
                             View Details
                         </a>

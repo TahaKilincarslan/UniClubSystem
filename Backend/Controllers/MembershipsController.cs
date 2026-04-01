@@ -27,8 +27,11 @@ namespace UniversityClubSystem.Controllers
         [HttpPost("apply")]
         public async Task<IActionResult> Apply([FromBody] MembershipApplyDto dto)
         {
-            // Kullanıcının var olup olmadığını kontrol et
-            var user = await _context.Users.FindAsync(dto.UserId);
+            var userIdClaim = User.FindFirst("nameid")?.Value;
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
             if (user == null)
                 return NotFound(new { message = "Kullanıcı bulunamadı." });
 
@@ -37,17 +40,32 @@ namespace UniversityClubSystem.Controllers
             if (club == null)
                 return NotFound(new { message = "Kulüp bulunamadı." });
 
+            // Üniversite kısıtlaması
+            if (user.UniversityId != null && user.UniversityId != club.UniversityId)
+                return BadRequest(new { message = "Yalnızca kendi üniversitenizin kulüplerine başvurabilirsiniz." });
+
             // Daha önce başvuru yapılmış mı kontrol et
             var existingMembership = await _context.ClubMemberships
-                .FirstOrDefaultAsync(m => m.UserId == dto.UserId && m.ClubId == dto.ClubId);
+                .FirstOrDefaultAsync(m => m.UserId == userId && m.ClubId == dto.ClubId);
 
             if (existingMembership != null)
-                return BadRequest(new { message = "Bu kulübe zaten başvuru yapılmış.", status = existingMembership.Status.ToString() });
+            {
+                if (existingMembership.Status == MembershipStatus.Pending)
+                    return BadRequest(new { message = "Başvurunuz zaten inceleniyor." });
+                if (existingMembership.Status == MembershipStatus.Approved)
+                    return BadRequest(new { message = "Bu kulübün zaten üyesisiniz." });
+
+                // Reddedilmişse mevcut kaydı güncelle (yeniden başvuru)
+                existingMembership.Status = MembershipStatus.Pending;
+                existingMembership.ApplicationDate = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Yeniden başvurunuz alındı. Onay bekleniyor." });
+            }
 
             // Yeni başvuru oluştur
             var membership = new ClubMembership
             {
-                UserId = dto.UserId,
+                UserId = userId,
                 ClubId = dto.ClubId,
                 Status = MembershipStatus.Pending,
                 ApplicationDate = DateTime.UtcNow
@@ -62,6 +80,36 @@ namespace UniversityClubSystem.Controllers
                 membershipId = membership.Id,
                 status = membership.Status.ToString()
             });
+        }
+
+        /// <summary>
+        /// Giriş yapmış kullanıcının tüm kulüp üyelik durumlarını döndürür.
+        /// GET /api/memberships/my
+        /// </summary>
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyMemberships()
+        {
+            var userIdClaim = User.FindFirst("nameid")?.Value;
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
+            var memberships = await _context.ClubMemberships
+                .Where(m => m.UserId == userId)
+                .Select(m => new
+                {
+                    m.ClubId,
+                    ClubName = m.Club.Name,
+                    ClubCategory = m.Club.Category,
+                    ClubImageUrl = m.Club.ImageUrl,
+                    UniversityName = m.Club.University.Name,
+                    UniversityId = m.Club.UniversityId,
+                    Status = m.Status.ToString(),
+                    m.ApplicationDate
+                })
+                .OrderByDescending(m => m.ApplicationDate)
+                .ToListAsync();
+
+            return Ok(memberships);
         }
 
         /// <summary>

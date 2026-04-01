@@ -11,7 +11,6 @@ namespace UniversityClubSystem.Validators
             RuleFor(x => x.Description).MaximumLength(2000);
             RuleFor(x => x.Category).NotEmpty().MaximumLength(100);
             RuleFor(x => x.UniversityId).GreaterThan(0);
-            RuleFor(x => x.ManagerId).GreaterThan(0);
         }
     }
 

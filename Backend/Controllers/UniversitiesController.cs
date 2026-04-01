@@ -42,11 +42,28 @@ namespace UniversityClubSystem.Controllers
                     u.Name,
                     u.City,
                     u.LogoUrl,
-                    ClubCount = u.Clubs.Count // Her üniversitenin kaç kulübü olduğunu da döndür
+                    ClubCount = u.Clubs.Count,
+                    StudentCount = _context.Users.Count(user => user.UniversityId == u.Id)
                 })
                 .ToListAsync();
 
             return Ok(universities);
+        }
+
+        /// <summary>
+        /// Yeni bir üniversite ekler.
+        /// POST /api/universities
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = nameof(UserRole.SystemAdmin))]
+        public async Task<IActionResult> CreateUniversity([FromBody] University university)
+        {
+            if (string.IsNullOrWhiteSpace(university.Name) || string.IsNullOrWhiteSpace(university.City))
+                return BadRequest("Name and City are required.");
+
+            _context.Universities.Add(university);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetUniversities), new { id = university.Id }, university);
         }
 
         /// <summary>

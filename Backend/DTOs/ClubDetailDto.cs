@@ -1,5 +1,14 @@
 namespace UniversityClubSystem.DTOs
 {
+    public class CreateClubDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
+        public int UniversityId { get; set; }
+    }
+
     // Kulüp detay sayfası için zenginleştirilmiş yanıt modeli
     public class ClubDetailDto
     {
