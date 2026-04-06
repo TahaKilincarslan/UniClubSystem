@@ -167,6 +167,24 @@ namespace UniversityClubSystem.Controllers
         }
 
         /// <summary>
+        /// Bir etkinliği siler.
+        /// DELETE /api/events/{id}
+        /// </summary>
+        [HttpDelete("api/events/{id:int}")]
+        [Authorize(Roles = nameof(UserRole.SystemAdmin))]
+        public async Task<IActionResult> DeleteEvent(int id)
+        {
+            var @event = await _context.Events.FindAsync(id);
+            if (@event == null)
+                return NotFound(new { message = "Etkinlik bulunamadı." });
+
+            _context.Events.Remove(@event);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Etkinlik başarıyla silindi." });
+        }
+
+        /// <summary>
         /// Etkinliğin aktiflik durumunu günceller.
         /// PUT /api/events/{id}/toggle
         /// </summary>

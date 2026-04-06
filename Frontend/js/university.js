@@ -176,8 +176,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         document.getElementById("editClubName").value = name;
         document.getElementById("editClubCategory").value = category;
         document.getElementById("editClubDescription").value = description;
-        document.getElementById("editClubImage").value = imageUrl;
-        
+        document.getElementById("editClubImage").value = "";
+        document.getElementById("editClubImage").dataset.current = imageUrl || "";
+        document.getElementById("editClubFormMessage").innerHTML = "";
+
         const modal = new bootstrap.Modal(document.getElementById('editClubModal'));
         modal.show();
     }
@@ -187,20 +189,32 @@ document.addEventListener("DOMContentLoaded", async function () {
         editClubForm.addEventListener("submit", async function(e) {
             e.preventDefault();
             const id = document.getElementById("editClubId").value;
+            const msgEl = document.getElementById("editClubFormMessage");
+            msgEl.innerHTML = `<div class="alert alert-info py-1">Kaydediliyor...</div>`;
+
+            let imageUrl = document.getElementById("editClubImage").dataset.current || null;
+            const fileInput = document.getElementById("editClubImage");
+            if (fileInput.files.length > 0) {
+                imageUrl = await ApiService.uploadImage("clubs", fileInput.files[0]);
+                if (!imageUrl) {
+                    msgEl.innerHTML = `<div class="alert alert-danger py-1">Resim yüklenemedi.</div>`;
+                    return;
+                }
+            }
+
             const clubData = {
-                id: parseInt(id),
                 name: document.getElementById("editClubName").value,
                 category: document.getElementById("editClubCategory").value,
                 description: document.getElementById("editClubDescription").value,
-                imageUrl: document.getElementById("editClubImage").value
+                imageUrl: imageUrl
             };
 
             const success = await ApiService.updateClub(id, clubData);
             if (success) {
-                alert("Club updated successfully!");
-                location.reload();
+                msgEl.innerHTML = `<div class="alert alert-success py-1">Kulüp güncellendi!</div>`;
+                setTimeout(() => location.reload(), 800);
             } else {
-                alert("Error updating club.");
+                msgEl.innerHTML = `<div class="alert alert-danger py-1">Güncelleme başarısız.</div>`;
             }
         });
     }

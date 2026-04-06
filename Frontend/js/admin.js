@@ -1,3 +1,5 @@
+let allRequestsData = [];
+
 document.addEventListener("DOMContentLoaded", () => {
     requireAdmin();
 
@@ -177,14 +179,42 @@ async function loadRequests() {
         const response = await fetch("http://localhost:5149/api/admin/requests", {
             headers: getAuthHeaders()
         });
-        const universities = await response.json();
+        allRequestsData = await response.json();
 
-        if (universities.length === 0) {
-            container.innerHTML = `<p class="text-muted">Henüz veri yok.</p>`;
-            return;
-        }
+        // Üniversite filtresini doldur
+        const uniFilter = document.getElementById("filterUniversity");
+        const currentVal = uniFilter.value;
+        uniFilter.innerHTML = `<option value="">Tüm Üniversiteler</option>`;
+        allRequestsData.forEach(u => {
+            const opt = document.createElement("option");
+            opt.value = u.id;
+            opt.textContent = u.name;
+            uniFilter.appendChild(opt);
+        });
+        uniFilter.value = currentVal;
 
-        container.innerHTML = "";
+        applyFilters();
+    } catch (err) {
+        container.innerHTML = `<div class="alert alert-danger">İstekler yüklenemedi: ${err.message}</div>`;
+    }
+}
+
+function applyFilters() {
+    const container = document.getElementById("requestsContainer");
+    const selectedUni = document.getElementById("filterUniversity").value;
+    const selectedStatus = document.getElementById("filterStatus").value;
+
+    let universities = allRequestsData;
+    if (selectedUni) {
+        universities = universities.filter(u => String(u.id) === selectedUni);
+    }
+
+    if (universities.length === 0) {
+        container.innerHTML = `<p class="text-muted">Henüz veri yok.</p>`;
+        return;
+    }
+
+    container.innerHTML = "";
 
         universities.forEach(uni => {
             const uniBlock = document.createElement("div");
@@ -208,8 +238,12 @@ async function loadRequests() {
                 const clubBlock = document.createElement("div");
                 clubBlock.className = "mb-4 p-3 bg-white rounded border club-block";
                 clubBlock.innerHTML = `
-                    <h6 class="fw-bold mb-3">
-                        <span class="badge bg-primary me-2">${club.category}</span>${club.name}
+                    <h6 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+                        <span>
+                            <span class="badge bg-primary me-2">${club.category}</span>${club.name}
+                        </span>
+                        <button onclick="openEditClub(${club.id}, '${(club.name || '').replace(/'/g, "\\'")}', '${club.category || ''}', \`${(club.description || '').replace(/`/g, '\\`')}\`, '${club.imageUrl || ''}')" class="btn btn-sm btn-outline-secondary me-1">Düzenle</button>
+                        <button onclick="deleteClub(${club.id}, '${club.name.replace(/'/g, "\\'")}')" class="btn btn-sm btn-outline-danger">Sil</button>
                     </h6>
                     <div id="club-content-${club.id}"></div>
                 `;
@@ -218,7 +252,11 @@ async function loadRequests() {
                 const clubContent = document.getElementById(`club-content-${club.id}`);
 
                 // ÜYELİK İSTEKLERİ
-                const memberRows = club.membershipRequests.map(m => `
+                const filteredMembers = selectedStatus
+                    ? club.membershipRequests.filter(m => m.status === selectedStatus)
+                    : club.membershipRequests;
+
+                const memberRows = filteredMembers.map(m => `
                     <tr>
                         <td>
                             <div class="fw-bold">${m.userFullName}</div>
@@ -233,12 +271,16 @@ async function loadRequests() {
                             ` : "—"}
                         </td>
                     </tr>
-                `).join("") || `<tr><td colspan="4" class="text-muted text-center">Üyelik isteği yok.</td></tr>`;
+                `).join("") || `<tr><td colspan="4" class="text-muted text-center">Bu filtrede üyelik isteği yok.</td></tr>`;
 
                 // ETKİNLİK İSTEKLERİ
                 let eventHtml = "";
                 club.events.forEach(event => {
-                    const eventRows = event.eventRequests.map(r => `
+                    const filteredRequests = selectedStatus
+                        ? event.eventRequests.filter(r => r.status === selectedStatus)
+                        : event.eventRequests;
+
+                    const eventRows = filteredRequests.map(r => `
                         <tr>
                             <td>
                                 <div class="fw-bold">${r.userFullName}</div>
@@ -253,13 +295,16 @@ async function loadRequests() {
                                 ` : "—"}
                             </td>
                         </tr>
-                    `).join("") || `<tr><td colspan="4" class="text-muted text-center">Katılım isteği yok.</td></tr>`;
+                    `).join("") || `<tr><td colspan="4" class="text-muted text-center">Bu filtrede katılım isteği yok.</td></tr>`;
 
                     eventHtml += `
                         <div class="mt-3">
-                            <p class="section-title text-secondary mb-1">
-                                Etkinlik: <strong>${event.title}</strong>
-                                <span class="text-muted">(${new Date(event.date).toLocaleDateString("tr-TR")})</span>
+                            <p class="section-title text-secondary mb-1 d-flex align-items-center justify-content-between">
+                                <span>
+                                    Etkinlik: <strong>${event.title}</strong>
+                                    <span class="text-muted">(${new Date(event.date).toLocaleDateString("tr-TR")})</span>
+                                </span>
+                                <button onclick="deleteEvent(${event.id}, '${event.title.replace(/'/g, "\\'")}')" class="btn btn-sm btn-outline-danger">Etkinliği Sil</button>
                             </p>
                             ${buildTable(eventRows)}
                         </div>
@@ -273,10 +318,6 @@ async function loadRequests() {
                 `;
             });
         });
-
-    } catch (err) {
-        container.innerHTML = `<div class="alert alert-danger">İstekler yüklenemedi: ${err.message}</div>`;
-    }
 }
 
 function buildTable(rows) {
@@ -309,4 +350,79 @@ window.handleEventRequest = async function (id, status) {
     const result = await ApiService.updateRequestStatus(id, status);
     alert(result.message || "İşlem tamamlandı.");
     loadRequests();
+};
+
+window.openEditClub = function (id, name, category, description, imageUrl) {
+    document.getElementById("editClubId").value = id;
+    document.getElementById("editClubName").value = name;
+    document.getElementById("editClubCategory").value = category;
+    document.getElementById("editClubDescription").value = description;
+    document.getElementById("editClubImageFile").value = "";
+    document.getElementById("editClubImageFile").dataset.current = imageUrl;
+    document.getElementById("editClubMessage").innerHTML = "";
+    new bootstrap.Modal(document.getElementById("editClubModal")).show();
+};
+
+window.saveClubEdit = async function () {
+    const id = document.getElementById("editClubId").value;
+    const msgEl = document.getElementById("editClubMessage");
+    msgEl.innerHTML = `<div class="alert alert-info py-1">Kaydediliyor...</div>`;
+
+    try {
+        let imageUrl = document.getElementById("editClubImageFile").dataset.current || null;
+        const fileInput = document.getElementById("editClubImageFile");
+        if (fileInput.files.length > 0) {
+            imageUrl = await ApiService.uploadImage("clubs", fileInput.files[0]);
+            if (!imageUrl) {
+                msgEl.innerHTML = `<div class="alert alert-danger py-1">Resim yüklenemedi.</div>`;
+                return;
+            }
+        }
+
+        const response = await fetch(`http://localhost:5149/api/clubs/${id}`, {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                name: document.getElementById("editClubName").value.trim(),
+                category: document.getElementById("editClubCategory").value,
+                description: document.getElementById("editClubDescription").value.trim(),
+                imageUrl: imageUrl
+            })
+        });
+
+        if (response.ok) {
+            msgEl.innerHTML = `<div class="alert alert-success py-1">Kulüp güncellendi!</div>`;
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById("editClubModal")).hide();
+                loadRequests();
+            }, 800);
+        } else {
+            const err = await response.text();
+            msgEl.innerHTML = `<div class="alert alert-danger py-1">Hata: ${err}</div>`;
+        }
+    } catch (err) {
+        msgEl.innerHTML = `<div class="alert alert-danger py-1">Hata: ${err.message}</div>`;
+    }
+};
+
+window.deleteClub = async function (id, name) {
+    if (!confirm(`"${name}" kulübünü silmek istediğinizden emin misiniz?\nBu işlem geri alınamaz.`)) return;
+    const ok = await ApiService.deleteClub(id);
+    if (ok) {
+        alert("Kulüp başarıyla silindi.");
+        loadRequests();
+    } else {
+        alert("Kulüp silinemedi.");
+    }
+};
+
+window.deleteEvent = async function (id, name) {
+    if (!confirm(`"${name}" etkinliğini silmek istediğinizden emin misiniz?\nBu işlem geri alınamaz.`)) return;
+    const ok = await ApiService.deleteEvent(id);
+    if (ok) {
+        alert("Etkinlik başarıyla silindi.");
+        loadRequests();
+    } else {
+        alert("Etkinlik silinemedi.");
+    }
 };

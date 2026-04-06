@@ -116,6 +116,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    // Şehir filtresini dinamik doldur
+    const cities = [...new Set(universities.map(u => u.city).filter(Boolean))].sort();
+    cities.forEach(city => {
+        const opt = document.createElement("option");
+        opt.value = city;
+        opt.textContent = city;
+        cityFilter.appendChild(opt);
+    });
+
     renderUniversities(universities);
 
     /* =========================

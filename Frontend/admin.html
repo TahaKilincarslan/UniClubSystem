@@ -52,6 +52,21 @@
             <h5 class="fw-bold mb-0">Tüm İstekler</h5>
             <button onclick="loadRequests()" class="btn btn-sm btn-outline-dark">Yenile</button>
         </div>
+        <div class="row g-2 mb-3">
+            <div class="col-md-4">
+                <select id="filterUniversity" class="form-select" onchange="applyFilters()">
+                    <option value="">Tüm Üniversiteler</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select id="filterStatus" class="form-select" onchange="applyFilters()">
+                    <option value="Pending">Sadece Bekleyenler</option>
+                    <option value="">Tümü</option>
+                    <option value="Approved">Onaylananlar</option>
+                    <option value="Rejected">Reddedilenler</option>
+                </select>
+            </div>
+        </div>
         <div id="requestsContainer">
             <p class="text-muted">Yükleniyor...</p>
         </div>
@@ -108,11 +123,17 @@
                         <select id="adminClubCategory" class="form-select" required>
                             <option value="">Seçiniz...</option>
                             <option>Technology</option>
-                            <option>Business</option>
                             <option>Engineering</option>
+                            <option>Business</option>
                             <option>Arts</option>
                             <option>Health</option>
                             <option>Social</option>
+                            <option>Sports</option>
+                            <option>Science</option>
+                            <option>Music</option>
+                            <option>Gaming</option>
+                            <option>Environment</option>
+                            <option>Volunteering</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -175,6 +196,56 @@
         </div>
     </div>
 
+</div>
+
+<!-- Kulüp Düzenleme Modalı -->
+<div class="modal fade" id="editClubModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kulübü Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editClubId">
+                <div class="mb-3">
+                    <label class="form-label">Kulüp Adı</label>
+                    <input type="text" id="editClubName" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Kategori</label>
+                    <select id="editClubCategory" class="form-select" required>
+                        <option>Technology</option>
+                        <option>Engineering</option>
+                        <option>Business</option>
+                        <option>Arts</option>
+                        <option>Health</option>
+                        <option>Social</option>
+                        <option>Sports</option>
+                        <option>Science</option>
+                        <option>Music</option>
+                        <option>Gaming</option>
+                        <option>Environment</option>
+                        <option>Volunteering</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Açıklama</label>
+                    <textarea id="editClubDescription" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Yeni Resim (opsiyonel)</label>
+                    <input type="file" id="editClubImageFile" class="form-control" accept="image/*">
+                    <small class="text-muted">Seçmezseniz mevcut resim korunur.</small>
+                </div>
+                <div id="editClubMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="saveClubEdit()">Kaydet</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

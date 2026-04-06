@@ -75,11 +75,17 @@
                             <select id="newClubCategory" class="form-select" required>
                                 <option value="">Seç...</option>
                                 <option value="Technology">Technology</option>
-                                <option value="Business">Business</option>
                                 <option value="Engineering">Engineering</option>
+                                <option value="Business">Business</option>
                                 <option value="Arts">Arts</option>
                                 <option value="Health">Health</option>
                                 <option value="Social">Social</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Science">Science</option>
+                                <option value="Music">Music</option>
+                                <option value="Gaming">Gaming</option>
+                                <option value="Environment">Environment</option>
+                                <option value="Volunteering">Volunteering</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -116,13 +122,19 @@
                         style="width:220px;">
 
                     <select id="categoryFilter" class="form-select" style="width:200px;">
-                        <option value="all">All Categories</option>
+                        <option value="all">Tüm Kategoriler</option>
                         <option value="Technology">Technology</option>
-                        <option value="Business">Business</option>
                         <option value="Engineering">Engineering</option>
+                        <option value="Business">Business</option>
                         <option value="Arts">Arts</option>
                         <option value="Health">Health</option>
                         <option value="Social">Social</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Science">Science</option>
+                        <option value="Music">Music</option>
+                        <option value="Gaming">Gaming</option>
+                        <option value="Environment">Environment</option>
+                        <option value="Volunteering">Volunteering</option>
                     </select>
 
                 </div>
@@ -136,36 +148,51 @@
 
     </div>
 
-    <!-- Club Edit Modal -->
+    <!-- Kulüp Düzenleme Modalı -->
     <div class="modal fade" id="editClubModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Club</h5>
+                    <h5 class="modal-title">Kulübü Düzenle</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editClubForm">
                         <input type="hidden" id="editClubId">
                         <div class="mb-3">
-                            <label class="form-label">Club Name</label>
+                            <label class="form-label">Kulüp Adı</label>
                             <input type="text" id="editClubName" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Category</label>
-                            <input type="text" id="editClubCategory" class="form-control" required>
+                            <label class="form-label">Kategori</label>
+                            <select id="editClubCategory" class="form-select" required>
+                                <option>Technology</option>
+                                <option>Engineering</option>
+                                <option>Business</option>
+                                <option>Arts</option>
+                                <option>Health</option>
+                                <option>Social</option>
+                                <option>Sports</option>
+                                <option>Science</option>
+                                <option>Music</option>
+                                <option>Gaming</option>
+                                <option>Environment</option>
+                                <option>Volunteering</option>
+                            </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
+                            <label class="form-label">Açıklama</label>
                             <textarea id="editClubDescription" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Image URL</label>
-                            <input type="text" id="editClubImage" class="form-control">
+                            <label class="form-label">Yeni Resim (opsiyonel)</label>
+                            <input type="file" id="editClubImage" class="form-control" accept="image/*">
+                            <small class="text-muted">Seçmezseniz mevcut resim korunur.</small>
                         </div>
+                        <div id="editClubFormMessage"></div>
                         <div class="text-end">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
                         </div>
                     </form>
                 </div>

@@ -254,6 +254,19 @@ const ApiService = {
         }
     },
 
+    async deleteEvent(id) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/${id}`, {
+                method: "DELETE",
+                headers: getAuthHeaders()
+            });
+            return response.ok;
+        } catch (error) {
+            console.error("Error deleting event:", error);
+            return false;
+        }
+    },
+
     async updateRequestStatus(requestId, status) {
         try {
             const response = await fetch(`${API_BASE_URL}/admin/event-requests/${requestId}/status`, {

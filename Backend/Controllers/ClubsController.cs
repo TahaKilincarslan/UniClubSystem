@@ -120,20 +120,18 @@ namespace UniversityClubSystem.Controllers
         /// </summary>
         [HttpPut("{id}")]
         [Authorize(Roles = nameof(UserRole.SystemAdmin))]
-        public async Task<IActionResult> UpdateClub(int id, [FromBody] Club club)
+        public async Task<IActionResult> UpdateClub(int id, [FromBody] UpdateClubDto dto)
         {
-            if (id != club.Id) return BadRequest("ID mismatch");
-
             var existingClub = await _context.Clubs.FindAsync(id);
             if (existingClub == null) return NotFound();
 
-            existingClub.Name = club.Name;
-            existingClub.Description = club.Description;
-            existingClub.Category = club.Category;
-            existingClub.ImageUrl = club.ImageUrl;
+            existingClub.Name = dto.Name;
+            existingClub.Description = dto.Description;
+            existingClub.Category = dto.Category;
+            existingClub.ImageUrl = dto.ImageUrl;
 
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok(new { message = "Kulüp başarıyla güncellendi." });
         }
 
         /// <summary>
